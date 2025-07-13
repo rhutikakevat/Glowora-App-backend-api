@@ -145,6 +145,10 @@ app.get("/api/categories",async (req,res)=>{
     try {
         const categories = await readAllCategories();
 
+         if (categories.length === 0) {
+            return res.status(404).json({ error: "Categories does not found" });
+        }
+
         res.status(200).json({data:{categories}})
     } catch (error) {
         res.status(500).json({error:"Failed to fetch categories."})
