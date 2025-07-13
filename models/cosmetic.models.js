@@ -67,6 +67,6 @@ const cosmeticSchema = mongoose.Schema({
     timestamps:true
 })
 
-const Cosmetic = mongoose.model("Cosmetic",cosmeticSchema);
+const Cosmetic = mongoose.model("Cosmetics",cosmeticSchema);
 
 module.exports = Cosmetic;

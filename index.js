@@ -49,7 +49,7 @@ app.post("/api/products",async (req,res)=>{
 
 async function readAllProducts() {
     try {
-        const allProducts = await Cosmetic.find();
+        const allProducts = await Cosmetic.find().populate("category");
 
         return allProducts;
     } catch (error) {
@@ -60,6 +60,9 @@ async function readAllProducts() {
 app.get("/api/products",async (req,res)=>{
     try {
         const products = await readAllProducts();
+        if (products.length === 0) {
+            return res.status(404).json({ error: "Products does not found" });
+        }
 
         res.status(200).json({data:{products}})
     } catch (error) {
