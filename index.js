@@ -227,9 +227,9 @@ app.get("/api/wishlist/products",async (req,res)=>{
     try {
         const allWishlistProductsData = await readAllWishlistProducts();
         
-        if (!allWishlistProductsData || allWishlistProductsData.length === 0) {
-            return res.status(404).json({ error: "No wishlist products found" });
-        }
+        // if (!allWishlistProductsData || allWishlistProductsData.length === 0) {
+        //     return res.status(404).json({ error: "No wishlist products found" });
+        // }
 
         res.status(200).json({data:allWishlistProductsData})
     } catch (error) {
