@@ -201,7 +201,6 @@ async function createWishlistProduct(newWishlistProduct){
 
 app.post("/api/wishlist/products", async(req,res)=>{
     try {
-        console.log(req.body);
         const wishlistData = await createWishlistProduct(req.body);
         
         res.status(201).json({message:"Wishlist Data added successfully",data:wishlistData})
