@@ -2,13 +2,14 @@ const express = require("express");
 const {initialDatabase} = require("./db/db.connect");
 const Cosmetic = require("./models/cosmetic.models");
 const Category = require("./models/category.model")
+const WishlistProducts = require("./models/wishlist.model")
 const cors = require("cors");
 require("dotenv").config()
 const app = express();
 
 const corsOptions = {
     origin:"*",
-    credential:true,
+    credentials:true,
     optionSuccessStatus:200,
 }
 
@@ -61,7 +62,7 @@ app.get("/api/products",async (req,res)=>{
     try {
         const products = await readAllProducts();
         if (products.length === 0) {
-            return res.status(404).json({ error: "Products does not found" });
+            return res.status(404).json({ error: "Products not found" });
         }
 
         res.status(200).json({data:{products}})
@@ -146,7 +147,7 @@ app.get("/api/categories",async (req,res)=>{
         const categories = await readAllCategories();
 
          if (categories.length === 0) {
-            return res.status(404).json({ error: "Categories does not found" });
+            return res.status(404).json({ error: "Categories not found" });
         }
 
         res.status(200).json({data:{categories}})
@@ -157,7 +158,7 @@ app.get("/api/categories",async (req,res)=>{
 
 // GET method - gets category by category id from the DB
 
-async function readcategoryByID(categoryId) {
+async function readCategoryByID(categoryId) {
     try {
         const categoryById = await Category.findById(categoryId);
 
@@ -169,7 +170,7 @@ async function readcategoryByID(categoryId) {
 
 app.get("/api/categories/:categoryId", async (req,res)=>{
     try {
-        const categoryId = await readcategoryByID(req.params.categoryId);
+        const categoryId = await readCategoryByID(req.params.categoryId);
 
         if (!categoryId) {
         return res.status(404).json({ error: "Category not found" });
@@ -180,6 +181,57 @@ app.get("/api/categories/:categoryId", async (req,res)=>{
         console.log(error);
 
         res.status(500).json({error:"Failed to fetch the data."})
+    }
+})
+
+// Wishlist Management Routes
+
+// Create a new Data with POST route for Wishlist
+
+async function createWishlistProduct(newWishlistProduct){
+    try {
+        const newWishlistData= new WishlistProducts(newWishlistProduct);
+        const savedWishlistData = await newWishlistData.save();
+
+        return savedWishlistData;
+    } catch (error) {
+        console.log("Error occurred while creating the products",error)
+    }
+}
+
+app.post("/api/wishlist/products", async(req,res)=>{
+    try {
+        const wishlistData = await createWishlistProduct(req.body);
+        
+        res.status(201).json({message:"Wishlist Data added successfully",data:wishlistData})
+    } catch (error) {
+        res.status(500).json({error:"Products not found!"})
+    }
+})
+
+// GET route - gets wishlist's Products by GET method from the DB
+
+async function readAllWishlistProducts() {
+    try {
+        const allWishlistProducts = await WishlistProducts.find();
+
+        return allWishlistProducts;
+    } catch (error) {
+        console.log("Error while reading the wishlist products",error)
+        throw error;
+    }
+}
+
+app.get("/api/wishlist/products",async (req,res)=>{
+    try {
+        const allWishlistProductsData = await readAllWishlistProducts();
+        if (!allWishlistProductsData || allWishlistProductsData.length === 0) {
+            return res.status(404).json({ error: "No wishlist products found" });
+        }
+
+        res.status(200).json({data:allWishlistProductsData})
+    } catch (error) {
+        res.status(500).json({error:"Products not found!"})
     }
 })
 
