@@ -201,6 +201,7 @@ async function createWishlistProduct(newWishlistProduct){
 
 app.post("/api/wishlist/products", async(req,res)=>{
     try {
+        console.log(req.body);
         const wishlistData = await createWishlistProduct(req.body);
         
         res.status(201).json({message:"Wishlist Data added successfully",data:wishlistData})
@@ -213,7 +214,7 @@ app.post("/api/wishlist/products", async(req,res)=>{
 
 async function readAllWishlistProducts() {
     try {
-        const allWishlistProducts = await WishlistProducts.find();
+        const allWishlistProducts = await WishlistProducts.find().populate("product");
 
         return allWishlistProducts;
     } catch (error) {
@@ -225,6 +226,7 @@ async function readAllWishlistProducts() {
 app.get("/api/wishlist/products",async (req,res)=>{
     try {
         const allWishlistProductsData = await readAllWishlistProducts();
+        
         if (!allWishlistProductsData || allWishlistProductsData.length === 0) {
             return res.status(404).json({ error: "No wishlist products found" });
         }
@@ -234,6 +236,33 @@ app.get("/api/wishlist/products",async (req,res)=>{
         res.status(500).json({error:"Products not found!"})
     }
 })
+
+// DELETE - to remove item in wishlist
+
+async function deleteWishlistProduct(productId) {
+    try {
+        const deleteProductData = await WishlistProducts.findByIdAndDelete(productId);
+
+        return deleteProductData;
+    } catch (error) {
+        console.log("Error while deleting the wishlist products in database",error)
+    }
+}
+
+app.delete("/api/wishlist/product/:productId", async (req,res)=>{
+    try {
+        const deletedProduct = await deleteWishlistProduct(req.params);
+
+        if (!deletedItem) {
+            return res.status(404).json({ error: "Wishlist item not found" });
+        }
+
+        res.status(200).json({message:"Wishlist Product deleted successfully",product:deletedProduct})
+    } catch (error) {
+        res.status(500).json({error:"Product not found!"})
+    }
+})
+
 
 const PORT = process.env.PORT || 3000;
 
