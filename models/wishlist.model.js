@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const wishlistProductsSchema = mongoose.Schema({
-    product: {
+    products: {
            type: mongoose.Schema.Types.ObjectId,
            ref:"Cosmetics",
            required:true,

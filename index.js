@@ -251,9 +251,9 @@ async function deleteWishlistProduct(productId) {
 
 app.delete("/api/wishlist/product/:productId", async (req,res)=>{
     try {
-        const deletedProduct = await deleteWishlistProduct(req.params);
+        const deletedProduct = await deleteWishlistProduct(req.params.productId);
 
-        if (!deletedItem) {
+        if (!deletedProduct) {
             return res.status(404).json({ error: "Wishlist item not found" });
         }
 
