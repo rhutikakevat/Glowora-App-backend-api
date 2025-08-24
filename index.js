@@ -240,7 +240,7 @@ app.get("/api/wishlist/products",async (req,res)=>{
 
 async function deleteWishlistProduct(productId) {
     try {
-        const deleteProductData = await WishlistProducts.findByIdAndDelete({product:productId});
+        const deleteProductData = await WishlistProducts.findOneAndDelete({product:productId});
 
         return deleteProductData;
     } catch (error) {
