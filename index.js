@@ -1,8 +1,9 @@
 const express = require("express");
 const {initialDatabase} = require("./db/db.connect");
 const Cosmetic = require("./models/cosmetic.models");
-const Category = require("./models/category.model")
-const WishlistProducts = require("./models/wishlist.model")
+const Category = require("./models/category.model");
+const WishlistProducts = require("./models/wishlist.model");
+const CartProducts = require("./models/cart.model");
 const cors = require("cors");
 require("dotenv").config()
 const app = express();
@@ -226,9 +227,9 @@ app.get("/api/wishlist/products",async (req,res)=>{
     try {
         const allWishlistProductsData = await readAllWishlistProducts();
         
-        // if (!allWishlistProductsData || allWishlistProductsData.length === 0) {
-        //     return res.status(404).json({ error: "No wishlist products found" });
-        // }
+        if (!allWishlistProductsData || allWishlistProductsData.length === 0) {
+            return res.status(404).json({ error: "No wishlist products found" });
+        }
 
         res.status(200).json({data:allWishlistProductsData})
     } catch (error) {
@@ -262,6 +263,120 @@ app.delete("/api/wishlist/product/:productId", async (req,res)=>{
     }
 })
 
+// Cart Management
+
+// GET - this route for fetching the products data 
+
+async function readAllCartProducts() {
+    try {
+        const allCartProducts = await CartProducts.find();
+        
+        return allCartProducts;
+    } catch (error) {
+        console.log("Error occurred while read all cart products",error);
+    }
+}
+
+app.get("/api/cart/products", async (req,res)=>{
+    try {
+         const allCartProducts = await readAllCartProducts();
+        
+        if (!allCartProducts || allCartProducts.length === 0) {
+            return res.status(404).json({ error: "No wishlist products found" });
+        }
+
+        res.status(200).json({data: allCartProducts})
+    } catch (error) {
+        res.status(500).json({error:"Product not found!"})
+    }
+})
+
+// POST - this route for creating the products data
+
+async function createCartProducts(newCartData){
+    try {
+        const createCartData = new CartProducts(newCartData);
+        const savedData = await createCartData.save()
+        
+        return savedData;
+    } catch (error) {
+        console.log("Error occurred while creating the data",error);
+    }
+}
+
+app.post("/api/cart/products", async (req,res)=>{
+    try {
+        const savedCartData = await createCartProducts(req.body);
+
+        res.status(201).json({
+            message:"Cart Data added successfully",
+            data: savedCartData,
+        })
+
+    } catch (error) {
+        if (error.name === 'ValidationError') {
+            res.status(400).json({ error: "Product ids and quantity are required", details: error.message });
+        } else {
+            res.status(500).json({ error: "Products not found!" });
+        }
+    }
+})
+
+// DELETE - route for deleted cart data 
+
+async function deletedCartProduct(cartProductId){
+    try {
+        const deletedCartData = await CartProducts.findByIdAndDelete(cartProductId)
+        
+        return deletedCartData;
+    } catch (error) {
+        console.log("Error occurred while deleting the cart data",error);
+    }
+}
+
+app.delete("/api/cart/:cartProductId", async (req,res)=>{
+    try {
+        const deletedData = await deletedCartProduct(req.params.cartProductId);
+
+        if (!deletedData) {
+            return res.status(404).json({ error: "Wishlist item not found" });
+        }
+
+        res.status(200).json({message:"Cart data deleted successfully",deletedData});
+    } catch (error) {
+        res.status(500).json({error:"Product not found"})
+    }
+})
+
+// POST - this route for updating the quantity in cart product
+
+async function updatedCartProduct (productId, addToUpdateQuantity){
+    try {
+        const updateData = await CartProducts.findOneAndUpdate(
+           { _id : productId}, 
+           { $set: { "product.quantity" : addToUpdateQuantity.product.quantity }} , 
+           { new:true}
+        )
+
+        return updateData;
+    } catch (error) {
+        console.log("Error occurred while updating the data")
+    }
+}
+
+app.post("/api/cart/product/:productId", async (req,res)=>{
+    try {
+        const updatedCartData = await updatedCartProduct(req.params.productId, req.body);
+
+        if(!updatedCartData){
+          return res.status(404).json({error:"Cart data not found!"})
+        }
+
+        res.status(200).json({message:"Cart Data updated successfully",data:updatedCartData})
+    } catch (error) {
+        res.status(500).json({error:"Product not found!"})
+    }
+})
 
 const PORT = process.env.PORT || 3000;
 
