@@ -265,7 +265,7 @@ app.delete("/api/wishlist/product/:productId", async (req,res)=>{
 
 // Cart Management
 
-// GET - this route for fetching the products data 
+// GET - fetch all cart products (with product details populated).
 
 async function readAllCartProducts() {
     try {
@@ -282,7 +282,7 @@ app.get("/api/cart/products", async (req,res)=>{
          const allCartProducts = await readAllCartProducts();
         
         if (!allCartProducts || allCartProducts.length === 0) {
-            return res.status(404).json({ error: "No wishlist products found" });
+            return res.status(404).json({ error: "No cart products found" });
         }
 
         res.status(200).json({data: allCartProducts})
@@ -291,7 +291,7 @@ app.get("/api/cart/products", async (req,res)=>{
     }
 })
 
-// POST - this route for creating the products data
+// POST - add a new product or increase quantity if already exists
 
 async function createCartProducts(newCartData){
     try {
@@ -308,6 +308,10 @@ app.post("/api/cart/products", async (req,res)=>{
     try {
         const savedCartData = await createCartProducts(req.body);
 
+        if(!savedCartData){
+            res.status(400).json({ error : "ProductId and quantity are required" })
+        }
+
         res.status(201).json({
             message:"Cart Data added successfully",
             data: savedCartData,
@@ -315,14 +319,15 @@ app.post("/api/cart/products", async (req,res)=>{
 
     } catch (error) {
         if (error.name === 'ValidationError') {
-            res.status(400).json({ error: "Product ids and quantity are required", details: error.message });
+            res.status(400).json({ error: "Product ids and quantity are required", 
+                details: error.message });
         } else {
             res.status(500).json({ error: "Products not found!" });
         }
     }
 })
 
-// DELETE - route for deleted cart data 
+// DELETE - ove a product from cart by _id
 
 async function deletedCartProduct(cartProductId){
     try {
@@ -348,13 +353,13 @@ app.delete("/api/cart/:cartProductId", async (req,res)=>{
     }
 })
 
-// POST - this route for updating the quantity in cart product
+// POST - update quantity of a product.
 
 async function updatedCartProduct (productId, addToUpdateQuantity){
     try {
         const updateData = await CartProducts.findOneAndUpdate(
            { _id : productId}, 
-           { $set: { "product.quantity" : addToUpdateQuantity.product.quantity }} , 
+           { $set: { quantity: addToUpdateQuantity } } , 
            { new:true}
         )
 
@@ -366,7 +371,9 @@ async function updatedCartProduct (productId, addToUpdateQuantity){
 
 app.post("/api/cart/product/:productId", async (req,res)=>{
     try {
-        const updatedCartData = await updatedCartProduct(req.params.productId, req.body);
+        const {quantity} = req.body;
+
+        const updatedCartData = await updatedCartProduct(req.params.productId, quantity);
 
         if(!updatedCartData){
           return res.status(404).json({error:"Cart data not found!"})
