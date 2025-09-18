@@ -269,7 +269,7 @@ app.delete("/api/wishlist/product/:productId", async (req,res)=>{
 
 async function readAllCartProducts() {
     try {
-        const allCartProducts = await CartProducts.find();
+        const allCartProducts = await CartProducts.find().populate("productId");
         
         return allCartProducts;
     } catch (error) {
