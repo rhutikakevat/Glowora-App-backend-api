@@ -361,11 +361,13 @@ app.delete("/api/cart/:cartProductId", async (req, res) => {
 async function updatedCartProduct(productId, addToUpdateQuantity) {
     try {
         const objectId = new mongoose.Types.ObjectId(productId)
+
         const updateData = await CartProducts.findOneAndUpdate(
-            { productId: objectId },
+            objectId,
             { $inc: { quantity: addToUpdateQuantity } },
             { new: true }
         )
+        console.log("Updating productId:", objectId, "Updated:", !!updateData);
 
         return updateData;
     } catch (error) {
