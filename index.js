@@ -5,6 +5,7 @@ const Category = require("./models/category.model");
 const WishlistProducts = require("./models/wishlist.model");
 const CartProducts = require("./models/cart.model");
 const cors = require("cors");
+const { default: mongoose } = require("mongoose");
 require("dotenv").config()
 const app = express();
 
@@ -359,8 +360,9 @@ app.delete("/api/cart/:cartProductId", async (req, res) => {
 
 async function updatedCartProduct(productId, addToUpdateQuantity) {
     try {
+        const objectId = new mongoose.Types.ObjectId(productId)
         const updateData = await CartProducts.findOneAndUpdate(
-            { productId },
+            { productId: objectId },
             { $inc: { quantity: addToUpdateQuantity } },
             { new: true }
         )
@@ -381,7 +383,10 @@ app.post("/api/cart/product/:productId", async (req, res) => {
             return res.status(404).json({ error: "Cart data not found!" })
         }
 
-        res.status(200).json({ message: "Cart Data updated successfully", data: updatedCartData })
+        res.status(200).json({
+            message: "Cart Data updated successfully",
+            data: updatedCartData
+        })
     } catch (error) {
         res.status(500).json({ error: "Product not found!" })
     }
