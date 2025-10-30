@@ -4,6 +4,7 @@ const Cosmetic = require("./models/cosmetic.models");
 const Category = require("./models/category.model");
 const WishlistProducts = require("./models/wishlist.model");
 const CartProducts = require("./models/cart.model");
+const Users = require("./models/user.models")
 const cors = require("cors");
 const { default: mongoose } = require("mongoose");
 require("dotenv").config()
@@ -292,7 +293,7 @@ app.get("/api/cart/products", async (req, res) => {
     }
 })
 
-// POST - add a new product or increase quantity if already exists
+// POST - add a new product in my cart
 
 async function createCartProducts(newCartData) {
     try {
@@ -330,7 +331,7 @@ app.post("/api/cart/products", async (req, res) => {
     }
 })
 
-// DELETE - ove a product from cart by _id
+// DELETE - delete a product from cart by productId
 
 async function deletedCartProduct(cartProductId) {
     try {
@@ -367,7 +368,7 @@ async function updatedCartProduct(productId, addToUpdateQuantity) {
             { $inc: { quantity: addToUpdateQuantity } },
             { new: true }
         )
-        console.log("Updating productId:", objectId, "Updated:", !!updateData);
+        // console.log("Updating productId:", objectId, "Updated:", !!updateData);
 
         return updateData;
     } catch (error) {
@@ -394,17 +395,127 @@ app.post("/api/cart/product/:productId", async (req, res) => {
     }
 })
 
+// User Profile Management
+
 // Address Management
 
-// GET - this route for fetch address data 
+// GET - this route for fetch user's address data 
 
-async function readAllAddress(params) {
+async function readAllUser() {
     try {
+        const allUserData = await Users.find();
 
+        return allUserData;
     } catch (error) {
-        console.log("Error while fetching the data", error);
+        console.log("Error while fetching the user data", error);
     }
 }
+
+app.get("/api/users", async (req, res) => {
+    try {
+        const allUserData = await readAllUser();
+
+        if (!allUserData) {
+            return res.status(404).json({ error: "User data not found!" });
+        }
+
+        res.status(200).json({ data: { users : allUserData } });
+    } catch (error) {
+        console.log("Error while fetching the user data", error);
+        res.status(500).json({ error: "Failed to fetch the user data" });
+    }
+});
+
+// POST - this route for create user's address data
+
+async function createUserData(seedUserData) {
+    try {
+        const newData = new Users(seedUserData);
+        const savedData = await newData.save();
+
+        return savedData;
+    } catch (error) {
+        console.log("Error while creating the user data", error);
+    }
+}
+
+app.post("/api/users", async (req, res) => {
+    try {
+        const createdUserData = await createUserData(req.body);
+
+        if (!createdUserData) {
+            return res.status(400).json({ error: "Failed to create user data" });
+        }
+
+        res.status(201).json({
+            message: "User data created successfully",
+            data: createdUserData
+        });
+    } catch (error) {
+        console.log("Error while creating the user data", error);
+        res.status(500).json({ error: "Failed to create user data" });
+    }
+});
+
+// POST - Update user's address data 
+
+async function updateUserData(name, addToData) {
+    try {
+        const userData = await Users.findOneAndUpdate(
+            { username: name },
+            { $set: addToData },
+            { new: true }
+        );
+
+        return userData;
+    } catch (error) {
+        console.log("Error while updating the user data", error);
+    }
+}
+
+app.post("/api/users/:username", async (req, res) => {
+    try {
+        const updatedUserData = await updateUserData(req.params.username, req.body)
+
+        if (!updatedUserData) {
+            return res.status(404).json({ error: "User data is not updated" })
+        }
+
+        res.status(200).json({
+            message: "User data updated successfully",
+            data: updatedUserData
+        })
+    } catch (error) {
+        console.log("Error occurred while updating user data")
+        res.status(500).json({ error: "User data not found!" })
+    }
+})
+
+// DELETE - delete user's address data in database
+
+async function deleteUserData(userId) {
+    try {
+        const deleteUserData = await Users.findByIdAndDelete(userId)
+
+        return deleteUserData;
+    } catch (error) {
+        console.log("Error occurred while deleting the user data", error)
+    }
+}
+
+app.delete("/api/profile/:userId", async (req, res) => {
+    try {
+        const deletedData = await deleteUserData(req.params.userId)
+
+        if (!deletedData) {
+            return res.status(404).json({ error: "User not found" })
+        }
+
+        res.status(200).json({ message: "User data is deleted successfully", deletedData })
+    } catch (error) {
+        console.log("Error while deleting the user data", error)
+    }
+})
 
 const PORT = process.env.PORT || 3000;
 
