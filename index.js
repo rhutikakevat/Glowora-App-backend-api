@@ -1,7 +1,7 @@
 const express = require("express");
-const { initialDatabase } = require("./db/db.connect");
-const Cosmetic = require("./models/cosmetic.models");
+const { initialDatabase } = require("./db/db.connect");;
 const Category = require("./models/category.model");
+const Cosmetic = require("./models/cosmetic.models")
 const WishlistProducts = require("./models/wishlist.model");
 const CartProducts = require("./models/cart.model");
 const Users = require("./models/user.models")

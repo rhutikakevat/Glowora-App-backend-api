@@ -7,7 +7,7 @@ const cosmeticSchema = mongoose.Schema({
     },
     category:{
         type: mongoose.Schema.Types.ObjectId,
-        ref:"Category",
+        ref:"Categories",
         required:true,
     },
     details:{
