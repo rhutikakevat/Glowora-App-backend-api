@@ -78,7 +78,7 @@ app.get("/api/products", async (req, res) => {
 
 async function readProductByID(productId) {
     try {
-        const productById = await Cosmetic.findById(productId);
+        const productById = await Cosmetic.findById(productId).populate("category");
 
         return productById;
     } catch (error) {
