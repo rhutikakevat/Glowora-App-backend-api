@@ -1,10 +1,11 @@
 const express = require("express");
 const { initialDatabase } = require("./db/db.connect");;
 const Category = require("./models/category.model");
-const Cosmetic = require("./models/cosmetic.models")
+const Cosmetic = require("./models/cosmetic.model")
 const WishlistProducts = require("./models/wishlist.model");
 const CartProducts = require("./models/cart.model");
-const Users = require("./models/user.models")
+const Users = require("./models/user.model")
+const Addresses = require("./models/address.model")
 const cors = require("cors");
 const { default: mongoose } = require("mongoose");
 require("dotenv").config()
@@ -348,7 +349,7 @@ app.delete("/api/cart/:cartProductId", async (req, res) => {
         const deletedData = await deletedCartProduct(req.params.cartProductId);
 
         if (!deletedData) {
-            return res.status(404).json({ error: "Wishlist item not found" });
+            return res.status(404).json({ error: "Cart item not found" });
         }
 
         res.status(200).json({ message: "Cart data deleted successfully", deletedData });
@@ -397,123 +398,193 @@ app.post("/api/cart/product/:productId", async (req, res) => {
 
 // User Profile Management
 
-// Address Management
-
-// GET - this route for fetch user's address data 
+// GET - this route for fetch the user's data
 
 async function readAllUser() {
     try {
-        const allUserData = await Users.find();
+        const allUserData = await Users.find().populate("address")
 
         return allUserData;
     } catch (error) {
-        console.log("Error while fetching the user data", error);
+        console.log("Error occurred while fetching user's data", error);
     }
 }
 
 app.get("/api/users", async (req, res) => {
     try {
-        const allUserData = await readAllUser();
+        const userData = await readAllUser()
 
-        if (!allUserData) {
-            return res.status(404).json({ error: "User data not found!" });
+        if (!userData) {
+            return res.status(404).json("User's data not found!")
         }
 
-        res.status(200).json({ data: { users : allUserData } });
+        res.status(200).json({ data: { users: userData } })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to fetch the user data" })
+    }
+})
+
+// Address Management
+
+// GET - this route for fetch user's address data 
+
+async function readAllAddresses() {
+    try {
+        const allAddresses = await Addresses.find().populate("userId");
+
+        return allAddresses;
     } catch (error) {
         console.log("Error while fetching the user data", error);
-        res.status(500).json({ error: "Failed to fetch the user data" });
+    }
+}
+
+app.get("/api/addresses", async (req, res) => {
+    try {
+        const allAddressesData = await readAllAddresses();
+
+        if (!allAddressesData) {
+            return res.status(404).json({ error: "Address data not found!" });
+        }
+
+        res.status(200).json({ data: { addresses: allAddressesData } });
+    } catch (error) {
+        console.log("Error while fetching the address data", error);
+        res.status(500).json({ error: "Failed to fetch the address data" });
     }
 });
 
 // POST - this route for create user's address data
 
-async function createUserData(seedUserData) {
+async function createAddressData(seedAddressData) {
     try {
-        const newData = new Users(seedUserData);
+        const newData = new Addresses(seedAddressData);
         const savedData = await newData.save();
 
         return savedData;
     } catch (error) {
-        console.log("Error while creating the user data", error);
+        console.log("Error while creating the address data", error);
     }
 }
 
-app.post("/api/users", async (req, res) => {
+app.post("/api/addresses", async (req, res) => {
     try {
-        const createdUserData = await createUserData(req.body);
+        const createdAddressData = await createAddressData(req.body);
 
-        if (!createdUserData) {
-            return res.status(400).json({ error: "Failed to create user data" });
+        if (!createdAddressData) {
+            return res.status(400).json({ error: "Failed to create address's data" });
         }
 
         res.status(201).json({
-            message: "User data created successfully",
-            data: createdUserData
+            message: "Address data created successfully",
+            data: createdAddressData
         });
     } catch (error) {
-        console.log("Error while creating the user data", error);
-        res.status(500).json({ error: "Failed to create user data" });
+        console.log("Error while creating the address data", error);
+        res.status(500).json({ error: "Failed to create address data" });
     }
 });
 
 // POST - Update user's address data 
 
-async function updateUserData(name, addToData) {
+async function updateAddressData(addressId, addToData) {
     try {
-        const userData = await Users.findOneAndUpdate(
-            { username: name },
+        const addressData = await Addresses.findByIdAndUpdate(
+            addressId,
             { $set: addToData },
             { new: true }
         );
 
-        return userData;
+        return addressData;
     } catch (error) {
-        console.log("Error while updating the user data", error);
+        console.log("Error while updating the address data", error);
     }
 }
 
-app.post("/api/users/:username", async (req, res) => {
+app.post("/api/address/:addressId", async (req, res) => {
     try {
-        const updatedUserData = await updateUserData(req.params.username, req.body)
+        const updatedAddressData = await updateAddressData(req.params.addressId, req.body)
 
-        if (!updatedUserData) {
-            return res.status(404).json({ error: "User data is not updated" })
+        if (!updatedAddressData) {
+            return res.status(404).json({ error: "Address data is not updated" })
         }
 
         res.status(200).json({
-            message: "User data updated successfully",
-            data: updatedUserData
+            message: "Address data updated successfully",
+            data: updatedAddressData
         })
     } catch (error) {
-        console.log("Error occurred while updating user data")
-        res.status(500).json({ error: "User data not found!" })
+        console.log("Error occurred while updating address data")
+        res.status(500).json({ error: "Address data not found!" })
     }
 })
 
 // DELETE - delete user's address data in database
 
-async function deleteUserData(userId) {
+async function deleteAddressData(addressId) {
     try {
-        const deleteUserData = await Users.findByIdAndDelete(userId)
+        const deleteAddressData = await Addresses.findByIdAndDelete(addressId)
 
-        return deleteUserData;
+        return deleteAddressData;
     } catch (error) {
-        console.log("Error occurred while deleting the user data", error)
+        console.log("Error occurred while deleting the address data", error)
     }
 }
 
-app.delete("/api/profile/:userId", async (req, res) => {
+app.delete("/api/address/:addressId", async (req, res) => {
     try {
-        const deletedData = await deleteUserData(req.params.userId)
+        const deletedData = await deleteAddressData(req.params.addressId)
 
         if (!deletedData) {
-            return res.status(404).json({ error: "User not found" })
+            return res.status(404).json({ error: "Address not found" })
         }
 
-        res.status(200).json({ message: "User data is deleted successfully", deletedData })
+        res.status(200).json({ message: "Address data is deleted successfully", deletedData })
     } catch (error) {
-        console.log("Error while deleting the user data", error)
+        console.log("Error while deleting the address data", error)
+    }
+})
+
+// POST - to set a one address as default address
+
+async function setDefaultAddress(userId, addressId) {
+    try {
+        await Addresses.updateMany({ userId }, { isDefault: false })
+
+        const setAddressForDefault = await Addresses.findByIdAndUpdate(
+            addressId,
+            { isDefault: true },
+            { new: true })
+
+        return setAddressForDefault;
+    } catch (error) {
+        console.log("Error occurred while set default address", error)
+    }
+}
+
+app.post("/api/address/default/:addressId", async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const { addressId } = req.params;
+
+        if (!userId) {
+            return res.status(400).json({ error: "User ID is required" })
+        }
+
+        const setAddressForDefaultData = await setDefaultAddress(userId, addressId)
+
+        if (!setAddressForDefaultData) {
+            return res.status(404).json({ error: "Address not found." })
+        }
+
+        res.status(200).json({
+            message: "Address is set as default successfully.",
+            data: setAddressForDefaultData
+        })
+    } catch (error) {
+        console.log("Error occurred while setting default address", error)
+
+        res.status(500).json({ error: "Failed to set default address" })
     }
 })
 

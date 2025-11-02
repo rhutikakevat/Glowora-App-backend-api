@@ -33,13 +33,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    address: {
-        street: { type: String, required: true, trim: true },
-        city: { type: String, required: true, trim: true },
-        state: { type: String, required: true, trim: true },
-        country: { type: String, required: true, default: "India", trim: true },
-        zipCode: { type: String, required: true, trim: true }
-    },
+    address: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Addresses",
+
+    }],
     gender: {
         type: String,
         enum: ['female', 'male', 'other'],
@@ -49,7 +47,7 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     }
-},{
+}, {
     timestamps: true,
 })
 
