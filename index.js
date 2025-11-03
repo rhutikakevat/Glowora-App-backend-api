@@ -461,6 +461,10 @@ async function createAddressData(seedAddressData) {
         const newData = new Addresses(seedAddressData);
         const savedData = await newData.save();
 
+        await Users.findByIdAndUpdate(savedData.userId,
+            { $push: { address: savedData._id } },
+            { new: true })
+
         return savedData;
     } catch (error) {
         console.log("Error while creating the address data", error);
@@ -545,7 +549,7 @@ app.delete("/api/address/:addressId", async (req, res) => {
     }
 })
 
-// POST - to set a one address as default address
+// POST - to set one address as default address
 
 async function setDefaultAddress(userId, addressId) {
     try {
