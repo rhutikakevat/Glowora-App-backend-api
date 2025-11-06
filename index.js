@@ -6,6 +6,7 @@ const WishlistProducts = require("./models/wishlist.model");
 const CartProducts = require("./models/cart.model");
 const Users = require("./models/user.model")
 const Addresses = require("./models/address.model")
+const Orders = require("./models/order.model")
 const cors = require("cors");
 const { default: mongoose } = require("mongoose");
 require("dotenv").config()
@@ -589,6 +590,75 @@ app.post("/api/address/default/:addressId", async (req, res) => {
         console.log("Error occurred while setting default address", error)
 
         res.status(500).json({ error: "Failed to set default address" })
+    }
+})
+
+// Order Management 
+
+// GET - Fetch the data of order
+
+async function readAllOrders() {
+    try {
+        const allOrderItems = await Orders.find()
+            .populate("orderProduct.productId")
+            .populate("userId")
+            .populate("shippingAddress")
+
+        return allOrderItems
+    } catch (error) {
+        console.log("Error occurred while fetching the order's data", error)
+    }
+}
+
+app.get("/api/ordered/products", async (req, res) => {
+    try {
+        const allOrderItemsData = await readAllOrders();
+
+        if (!allOrderItemsData) {
+            return res.status(404).json("Ordered Product's data not found!")
+        }
+
+        res.status(200).json({ data: { orders: allOrderItemsData } })
+    } catch (error) {
+        console.log("Error occurred while fetched the data", error)
+        res.status(500).json({ error: "Failed to fetched order's data" })
+    }
+})
+
+// POST - create a order's data
+
+async function createOrderData(newOrderedItem) {
+    try {
+        const orderDoc = new Orders(newOrderedItem);
+        const savedData = await orderDoc.save()
+
+        return savedData;
+    } catch (error) {
+        console.log("Error occurred while creating order's data", error.message)
+    }
+}
+
+app.post("/api/ordered/products", async (req, res) => {
+    try {
+        const seededOrderData = await createOrderData(req.body);
+
+        if (!seededOrderData.orderId ||
+            !seededOrderData.orderProduct ||
+            !seededOrderData.userId ||
+            !seededOrderData.paymentMethod ||
+            !seededOrderData.trackingId ||
+            !seededOrderData.expectedDelivery ||
+            !seededOrderData.totalPayment ||
+            !seededOrderData.shippingAddress
+        ) {
+            return res.status(400).json({ error: "Order ID, order product, user Id,tracking id, total amount, exoected delivery date, payment method and shipping address are required" })
+        }
+
+
+        res.status(201).json({ message: "Order data created successfully", data: seededOrderData })
+    } catch (error) {
+        console.log("Error occurred while created a data", error)
+        res.status(500).json({ error: "Ordered Product not found!" })
     }
 })
 
