@@ -647,14 +647,15 @@ app.post("/api/ordered/products", async (req, res) => {
             trackingId,
             expectedDelivery,
             totalPayment,
-            shippingAddress
+            shippingAddress,
+            orderId
         } = req.body;
 
         // console.log("Received order data:", req.body);
 
-        if (!orderProduct || !userId || !paymentMethod || !trackingId || !expectedDelivery || !totalPayment || !shippingAddress) {
+        if (!orderProduct || !orderId || !userId || !paymentMethod || !trackingId || !expectedDelivery || !totalPayment || !shippingAddress) {
             return res.status(400).json({
-                error: "All fields are required: order products, user ID, payment method, tracking ID, expected delivery, total payment, and shipping address"
+                error: "All fields are required: Order id, order products, user ID, payment method, tracking ID, expected delivery, total payment, and shipping address"
             });
         }
 
@@ -663,6 +664,7 @@ app.post("/api/ordered/products", async (req, res) => {
         }
 
         const newOrderData = {
+            orderId,
             orderProduct,
             userId,
             paymentMethod,
@@ -683,7 +685,6 @@ app.post("/api/ordered/products", async (req, res) => {
         res.status(201).json({
             message: "Order created successfully",
             data: seededOrderData,
-            orderId: seededOrderData.orderId,
         });
     } catch (error) {
         console.log("Error occurred while created a data", error)
