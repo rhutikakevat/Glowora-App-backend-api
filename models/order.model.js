@@ -4,7 +4,7 @@ const orderSchema = new mongoose.Schema({
     orderId: {
         type: String,
         unique: true,
-        default: () => `ORD${Math.floor(Math.random() * 1000)}`
+        default: () => `ORD${Math.floor(Math.random() * 10000000000)}`
     },
     orderProduct: [
         {

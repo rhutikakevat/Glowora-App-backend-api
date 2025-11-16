@@ -629,7 +629,7 @@ app.get("/api/ordered/products", async (req, res) => {
 
 async function createOrderData(newOrderedItem) {
     try {
-        const orderDoc = new Orders(newOrderedItem);
+        const orderDoc = (new Orders(newOrderedItem));
         const savedData = await orderDoc.save()
 
         return savedData;
@@ -640,22 +640,51 @@ async function createOrderData(newOrderedItem) {
 
 app.post("/api/ordered/products", async (req, res) => {
     try {
-        const seededOrderData = await createOrderData(req.body);
+        const {
+            orderProduct,
+            userId,
+            paymentMethod,
+            trackingId,
+            expectedDelivery,
+            totalPayment,
+            shippingAddress
+        } = req.body;
 
-        if (!seededOrderData.orderId ||
-            !seededOrderData.orderProduct ||
-            !seededOrderData.userId ||
-            !seededOrderData.paymentMethod ||
-            !seededOrderData.trackingId ||
-            !seededOrderData.expectedDelivery ||
-            !seededOrderData.totalPayment ||
-            !seededOrderData.shippingAddress
-        ) {
-            return res.status(400).json({ error: "Order ID, order product, user Id,tracking id, total amount, exoected delivery date, payment method and shipping address are required" })
+        // console.log("Received order data:", req.body);
+
+        if (!orderProduct || !userId || !paymentMethod || !trackingId || !expectedDelivery || !totalPayment || !shippingAddress) {
+            return res.status(400).json({
+                error: "All fields are required: order products, user ID, payment method, tracking ID, expected delivery, total payment, and shipping address"
+            });
         }
 
+        if (!Array.isArray(orderProduct) || orderProduct.length === 0) {
+            return res.status(400).json({ error: "Order products must be a non-empty array" });
+        }
 
-        res.status(201).json({ message: "Order data created successfully", data: seededOrderData })
+        const newOrderData = {
+            orderProduct,
+            userId,
+            paymentMethod,
+            trackingId,
+            expectedDelivery: new Date(expectedDelivery),
+            totalPayment,
+            shippingAddress,
+            status: "Pending",
+            paymentStatus: paymentMethod === "Cash on Delivery" ? "Unpaid" : "Paid"
+        };
+
+        const seededOrderData = await createOrderData(newOrderData);
+
+        if (!seededOrderData) {
+            return res.status(500).json({ error: "Failed to create order" });
+        }
+
+        res.status(201).json({
+            message: "Order created successfully",
+            data: seededOrderData,
+            orderId: seededOrderData.orderId,
+        });
     } catch (error) {
         console.log("Error occurred while created a data", error)
         res.status(500).json({ error: "Ordered Product not found!" })
