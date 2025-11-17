@@ -4,6 +4,7 @@ const orderSchema = new mongoose.Schema({
     orderId: {
         type: String,
         unique: true,
+        required: true
     },
     orderProduct: [
         {
@@ -29,7 +30,7 @@ const orderSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ["Credit Card", "Debit Card", "UPI ID/QR Code", "Net Banking", "Cash on Delivery"],
+        enum: ["Credit Card", "Debit Card", "UPI ID/QR Code", "Net Banking", "Cash on Delivery (COD)"],
         required: true
     },
     status: {
@@ -48,7 +49,7 @@ const orderSchema = new mongoose.Schema({
     paymentStatus: {
         type: String,
         enum: ["Paid", "Unpaid", "Refund"],
-        default: "Paid"
+        default: "UnPaid"
     },
     totalPayment: {
         type: Number,
@@ -64,8 +65,8 @@ const orderSchema = new mongoose.Schema({
         required: true
     }
 
-},{
-    timestamps:true
+}, {
+    timestamps: true
 })
 
 const Orders = mongoose.model("Orders", orderSchema);

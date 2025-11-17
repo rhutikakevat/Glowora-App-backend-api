@@ -673,7 +673,7 @@ app.post("/api/ordered/products", async (req, res) => {
             totalPayment,
             shippingAddress,
             status: "Pending",
-            paymentStatus: paymentMethod === "Cash on Delivery" ? "Unpaid" : "Paid"
+            paymentStatus: paymentMethod === "Cash on Delivery (COD)" ? "Unpaid" : "Paid"
         };
 
         const seededOrderData = await createOrderData(newOrderData);
