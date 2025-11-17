@@ -66,7 +66,7 @@ async function readAllProducts() {
 app.get("/api/products", async (req, res) => {
     try {
         const products = await readAllProducts();
-        if (products.length === 0) {
+        if (!products || products.length === 0) {
             return res.status(404).json({ error: "Products not found" });
         }
 
@@ -151,7 +151,7 @@ app.get("/api/categories", async (req, res) => {
     try {
         const categories = await readAllCategories();
 
-        if (categories.length === 0) {
+        if (!categories || categories.length === 0) {
             return res.status(404).json({ error: "Categories not found" });
         }
 
