@@ -231,7 +231,7 @@ app.get("/api/wishlist/products", async (req, res) => {
     try {
         const allWishlistProductsData = await readAllWishlistProducts();
 
-        if (!allWishlistProductsData || allWishlistProductsData.length === 0) {
+        if (!allWishlistProductsData) {
             return res.status(404).json({ error: "No wishlist products found" });
         }
 
@@ -285,7 +285,7 @@ app.get("/api/cart/products", async (req, res) => {
     try {
         const allCartProducts = await readAllCartProducts();
 
-        if (!allCartProducts || allCartProducts.length === 0) {
+        if (!allCartProducts) {
             return res.status(404).json({ error: "No cart products found" });
         }
 
@@ -415,7 +415,7 @@ app.get("/api/users", async (req, res) => {
     try {
         const userData = await readAllUser()
 
-        if (!userData) {
+        if (!userData || userData.length === 0) {
             return res.status(404).json("User's data not found!")
         }
 
@@ -444,7 +444,7 @@ app.get("/api/addresses", async (req, res) => {
     try {
         const allAddressesData = await readAllAddresses();
 
-        if (!allAddressesData) {
+        if (!allAddressesData || allAddressesData.length === 0) {
             return res.status(404).json({ error: "Address data not found!" });
         }
 
