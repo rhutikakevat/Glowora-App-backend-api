@@ -35,8 +35,8 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Pending", "Delivered", "Cancelled", "Return/Replace"],
-        default: "Pending"
+        enum: ["Shipped", "Delivered", "Cancelled", "Return/Replace"],
+        default: "Shipped"
     },
     trackingId: {
         type: String,
