@@ -672,7 +672,7 @@ app.post("/api/ordered/products", async (req, res) => {
             expectedDelivery: new Date(expectedDelivery),
             totalPayment,
             shippingAddress,
-            status: "Pending",
+            status: "Shipped",
             paymentStatus: paymentMethod === "Cash on Delivery (COD)" ? "Unpaid" : "Paid"
         };
 
